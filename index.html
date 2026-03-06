@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Create IDP</title>
+<style>
+:root{
+  --bg:#000; --card:#111; --border:#1e1e1e; --text:#fff; --muted:#8a8a8a;
+  --accent:#7B2EFF; --accent2:#B266FF;
+  --clubGlow: rgba(123,46,255,.18);
+  --shadow: 0 20px 70px rgba(0,0,0,.58);
+  --radius: 16px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-serif}
+.stage{
+  min-height:100vh;padding:22px;
+  background:
+    radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.05), transparent 60%),
+    linear-gradient(180deg,#000 0%,#050505 100%);
+  position:relative;overflow:hidden;
+}
+.stage::before{
+  content:"";position:absolute;inset:-40% -20%;transform:rotate(-14deg);
+  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
+  opacity:.18;pointer-events:none;
+}
+.wrap{max-width:980px;margin:0 auto;position:relative;z-index:2}
+
+.teamName{
+  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+  font-size:44px;text-transform:uppercase;letter-spacing:1px;line-height:1
+}
+.sub{margin-top:8px;color:var(--muted);font-size:14px}
+
+.themeLine{
+  margin-top:14px;height:4px;border-radius:999px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),transparent);
+  box-shadow:0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
+  position:relative;overflow:hidden;
+}
+.themeLine::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(120deg, rgba(255,255,255,0), rgba(255,255,255,.35), rgba(255,255,255,0));
+  transform:translateX(-70%);animation:sweep 2.8s linear infinite;opacity:.9;pointer-events:none;
+}
+@keyframes sweep{0%{transform:translateX(-70%)}100%{transform:translateX(70%)}}
+
+.card{
+  margin-top:18px;background:rgba(17,17,17,.85);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.card::before{
+  content:"";position:absolute;inset:-50% -20%;transform:rotate(-12deg);
+  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
+  opacity:.28;pointer-events:none;
+}
+
+.hRow{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;position:relative;z-index:2}
+.hTitle{
+  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+  font-size:22px;text-transform:uppercase;letter-spacing:.8px;margin:0
+}
+.pill{
+  font-size:11px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;
+  padding:7px 10px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.86);
+  white-space:nowrap
+}
+.pill.accent{
+  border-color:color-mix(in srgb, var(--accent) 60%, transparent);
+  background:color-mix(in srgb, var(--accent) 18%, transparent)
+}
+
+.meta{
+  margin-top:10px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.45;
+  position:relative;z-index:2
+}
+.smallLine{
+  height:3px;border-radius:999px;margin-top:14px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  opacity:.85;position:relative;z-index:2
+}
+
+.form{
+  margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  position:relative;z-index:2
+}
+@media (max-width:860px){.form{grid-template-columns:1fr}}
+
+.field{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.18);
+  border-radius:14px;padding:12px;
+}
+.label{
+  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+  font-size:14px;text-transform:uppercase;letter-spacing:.6px;margin:0;color:#fff
+}
+.input, .ta, .sel{
+  width:100%;margin-top:8px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.92);
+  border-radius:12px;
+  padding:10px 10px;
+  outline:none;
+  font-size:14px;
+}
+.ta{min-height:110px;resize:vertical}
+.row2{grid-column:1 / -1}
+
+.actions{
+  margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:flex-end;
+  position:relative;z-index:2
+}
+.btn{
+  cursor:pointer;border:none;border-radius:14px;padding:11px 14px;
+  font-weight:900;letter-spacing:.4px;text-transform:uppercase;
+  color:#fff;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  box-shadow:0 12px 26px color-mix(in srgb, var(--accent) 25%, transparent);
+  transition:transform .15s ease, filter .15s ease;
+}
+.btn:hover{transform:translateY(-1px);filter:saturate(1.15)}
+.btn.secondary{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:none;
+}
+.hint{margin-right:auto;color:rgba(255,255,255,.62);font-size:12px}
+
+.footerNote{
+  margin-top:10px;color:rgba(255,255,255,.55);font-size:12px;line-height:1.5;
+  position:relative;z-index:2
+}
+</style>
+</head>
+
+<body>
+<div class="stage">
+  <div class="wrap">
+    <div class="teamName" id="teamName">Create IDP</div>
+    <div class="sub" id="sub">Complete the plan below — then click “Save IDP”.</div>
+    <div class="themeLine" aria-hidden="true"></div>
+
+    <div class="card">
+      <div class="hRow">
+        <h3 class="hTitle">IDP Form</h3>
+        <div class="pill accent" id="statusPill">Ready</div>
+      </div>
+
+      <div class="meta" id="scopeMeta">
+        Build a clear development plan: 1–3 priorities, measurable targets, and weekly actions.
+      </div>
+
+      <div class="form">
+        <div class="field">
+          <div class="label">Player Name</div>
+          <input class="input" id="playerName" placeholder="e.g., Lucy C." />
+        </div>
+
+        <div class="field">
+          <div class="label">IDP Date</div>
+          <input class="input" id="idpDate" type="date" />
+        </div>
+
+        <div class="field">
+          <div class="label">Player ID (hidden in Wix, ok here)</div>
+          <input class="input" id="playerId" placeholder="auto-filled from Wix if available" />
+        </div>
+
+        <div class="field">
+  <div class="label">Team</div>
+  <select class="sel" id="teamId">
+    <option value="">Select Team</option>
+  </select>
+</div>
+
+        <div class="field row2">
+  <div class="field row2">
+  <div class="label">Primary Focus</div>
+
+  <input
+    class="input"
+    id="primaryFocus"
+    placeholder="e.g., Weak Foot Passing, Scanning Before Receiving, 1v1 Defending"
+  />
+</div>
+      
+
+        <div class="field row2">
+          <div class="label">Strengths</div>
+          <textarea class="ta" id="strengths" placeholder="What are they already doing well? Be specific."></textarea>
+        </div>
+
+        <div class="field row2">
+          <div class="label">Areas to Improve</div>
+          <textarea class="ta" id="improvements" placeholder="What needs improving? Include examples."></textarea>
+        </div>
+
+        <div class="field row2">
+          <div class="label">Weekly Targets (Measurable)</div>
+          <textarea class="ta" id="targets" placeholder="e.g., 50 left-foot passes per day • 10 mins ball mastery • 20 finishing reps"></textarea>
+        </div>
+
+        <div class="field row2">
+          <div class="label">Coach Notes</div>
+          <textarea class="ta" id="notes" placeholder="Any extra notes, mindset focus, reminders, etc."></textarea>
+        </div>
+      </div>
+
+      <div class="smallLine"></div>
+
+      <div class="actions">
+        <div class="hint" id="hintText">Connected to Wix via postMessage.</div>
+        <button class="btn secondary" id="btnReset" type="button">Reset</button>
+        <button class="btn" id="btnSave" type="button">Save IDP</button>
+      </div>
+
+      <div class="footerNote">
+        If you’re previewing on GitHub Pages, “Save IDP” won’t write to your database — it will only work when embedded in Wix as an HTML iframe.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CLUB_THEMES = {
+  default:    { accent:"#7B2EFF", accent2:"#B266FF", bgGlow:"rgba(123,46,255,.18)" },
+  cherrybrook:{ accent:"#C8102E", accent2:"#FF4B5C", bgGlow:"rgba(200,16,46,.20)" },
+  rumson:     { accent:"#FFFFFF", accent2:"#BDBDBD", bgGlow:"rgba(255,255,255,.10)" },
+  monmouth:   { accent:"#00E5FF", accent2:"#00A3FF", bgGlow:"rgba(0,229,255,.18)" }
+};
+
+function clean(v){ return String(v || "").trim(); }
+function setPill(text){
+  document.getElementById("statusPill").textContent = text;
+}
+function applyTheme({ clubSlug, accent, accent2, glow, source }) {
+  const slug = String(clubSlug || "default").trim().toLowerCase();
+  const fallback = CLUB_THEMES[slug] || CLUB_THEMES.default;
+
+  const finalAccent  = clean(accent)  || fallback.accent;
+  const finalAccent2 = clean(accent2) || fallback.accent2 || finalAccent;
+  const finalGlow    = clean(glow)    || fallback.bgGlow;
+
+  const r = document.documentElement.style;
+  r.setProperty("--accent", finalAccent);
+  r.setProperty("--accent2", finalAccent2);
+  r.setProperty("--clubGlow", finalGlow);
+
+  console.log("🎨 THEME APPLIED:", { slug, accent: finalAccent, accent2: finalAccent2, glow: finalGlow, source: source || "unknown" });
+}
+
+function fillFromContext(ctx){
+  if (!ctx) return;
+  if (ctx.playerId) document.getElementById("playerId").value = ctx.playerId;
+  if (ctx.teamId) document.getElementById("teamId").value = ctx.teamId;
+  if (ctx.playerName) document.getElementById("playerName").value = ctx.playerName;
+}
+
+function payload(){
+  return {
+    playerName: clean(document.getElementById("playerName").value),
+    idpDate: clean(document.getElementById("idpDate").value),
+    playerId: clean(document.getElementById("playerId").value),
+    teamId: clean(document.getElementById("teamId").value),
+    primaryFocus: clean(document.getElementById("primaryFocus").value),
+    strengths: clean(document.getElementById("strengths").value),
+    improvements: clean(document.getElementById("improvements").value),
+    targets: clean(document.getElementById("targets").value),
+    notes: clean(document.getElementById("notes").value)
+  };
+}
+
+function validate(p){
+  if (!p.playerName) return "Player Name is required.";
+  if (!p.playerId) return "Player ID is required (Wix should pass this automatically).";
+  if (!p.idpDate) return "IDP Date is required.";
+  if (!p.primaryFocus) return "Primary Focus is required.";
+  if (!p.targets) return "Weekly Targets are required.";
+  return "";
+}
+
+document.getElementById("btnReset").addEventListener("click", () => {
+  ["playerName","idpDate","playerId","teamId","primaryFocus","strengths","improvements","targets","notes"].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === "SELECT") el.value = "";
+    else el.value = "";
+  });
+  setPill("Ready");
+});
+
+document.getElementById("btnSave").addEventListener("click", () => {
+  const p = payload();
+  const err = validate(p);
+  if (err) {
+    setPill("Fix fields");
+    alert(err);
+    return;
+  }
+
+  setPill("Sending…");
+
+  // Send to Wix parent (HTML iframe -> Wix page code handles wixData.insert)
+  try {
+    window.parent.postMessage({ type:"IDP_SUBMIT", payload: p }, "*");
+  } catch(e){
+    console.error(e);
+    setPill("Error");
+    alert("Unable to message parent page.");
+    return;
+  }
+
+  // optimistic UI (Wix will reply with IDP_SAVED or IDP_SAVE_ERROR)
+  setTimeout(()=> setPill("Waiting…"), 250);
+});
+
+// Boot from hash (for GitHub preview tests)
+(function bootFromHash(){
+  const raw = (location.hash || "").replace(/^#/, "");
+  const params = new URLSearchParams(raw);
+  const clubSlug = params.get("clubSlug") || "default";
+  const accent = params.get("accent") || "";
+  const accent2 = params.get("accent2") || "";
+  const glow = params.get("glow") || "";
+  applyTheme({ clubSlug, accent, accent2, glow, source: "hash" });
+
+  // optional context
+  fillFromContext({
+    playerId: params.get("playerId") || "",
+    teamId: params.get("teamId") || "",
+    playerName: params.get("playerName") || ""
+  });
+})();
+
+// Listen for Wix init + save acknowledgements
+window.addEventListener("message", (ev) => {
+  const data = ev.data;
+  if (!data || !data.type) return;
+
+  if (data.type === "IDP_CREATOR_INIT") {
+    const clubSlug = data.clubSlug || "default";
+    const accent = data.theme?.accent || "";
+    const accent2 = data.theme?.accent2 || "";
+    const glow = data.theme?.glow || "";
+    applyTheme({ clubSlug, accent, accent2, glow, source: "postMessage" });
+
+    if (data.title) document.getElementById("teamName").textContent = clean(data.title);
+    if (data.sub) document.getElementById("sub").textContent = clean(data.sub);
+
+    fillFromContext(data.context || {});
+    setPill("Ready");
+    return;
+  }
+
+  if (data.type === "IDP_SAVED") {
+    setPill("Saved ✅");
+    // optional: clear after save
+    // document.getElementById("btnReset").click();
+    return;
+  }
+
+  if (data.type === "IDP_SAVE_ERROR") {
+    console.warn("Save error:", data.error);
+    setPill("Error");
+    alert("Save failed: " + (data.error || "Unknown error"));
+    return;
+  }
+});
+
+try { window.parent.postMessage({ type:"IFRAME_READY" }, "*"); } catch(_) {}
+</script>
+</body>
+</html>
