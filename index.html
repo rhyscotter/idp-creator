@@ -18,68 +18,156 @@
   --radius: 16px;
 }
 *{box-sizing:border-box}
-body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-serif}
+body{
+  margin:0;
+  background:transparent;
+  color:var(--text);
+  font-family:Arial,sans-serif;
+}
 .stage{
-  min-height:100vh;padding:22px;
+  min-height:100vh;
+  padding:22px;
   background:
     radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.05), transparent 60%),
     linear-gradient(180deg,#000 0%,#050505 100%);
-  position:relative;overflow:hidden;
+  position:relative;
+  overflow:hidden;
 }
 .stage::before{
-  content:"";position:absolute;inset:-40% -20%;transform:rotate(-14deg);
+  content:"";
+  position:absolute;
+  inset:-40% -20%;
+  transform:rotate(-14deg);
   background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
-  opacity:.18;pointer-events:none;
+  opacity:.18;
+  pointer-events:none;
 }
-.wrap{max-width:980px;margin:0 auto;position:relative;z-index:2}
+.wrap{
+  max-width:980px;
+  margin:0 auto;
+  position:relative;
+  z-index:2;
+}
 .teamName{
   font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
-  font-size:44px;text-transform:uppercase;letter-spacing:1px;line-height:1
+  font-size:44px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  line-height:1;
 }
-.sub{margin-top:8px;color:var(--muted);font-size:14px}
+.sub{
+  margin-top:8px;
+  color:var(--muted);
+  font-size:14px;
+}
 .themeLine{
-  margin-top:14px;height:4px;border-radius:999px;
+  margin-top:14px;
+  height:4px;
+  border-radius:999px;
   background:linear-gradient(90deg,var(--accent),var(--accent2),transparent);
   box-shadow:0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
-  position:relative;overflow:hidden;
+  position:relative;
+  overflow:hidden;
 }
 .themeLine::before{
-  content:"";position:absolute;inset:0;
+  content:"";
+  position:absolute;
+  inset:0;
   background:linear-gradient(120deg, rgba(255,255,255,0), rgba(255,255,255,.35), rgba(255,255,255,0));
-  transform:translateX(-70%);animation:sweep 2.8s linear infinite;opacity:.9;pointer-events:none;
+  transform:translateX(-70%);
+  animation:sweep 2.8s linear infinite;
+  opacity:.9;
+  pointer-events:none;
 }
-@keyframes sweep{0%{transform:translateX(-70%)}100%{transform:translateX(70%)}}
+@keyframes sweep{
+  0%{transform:translateX(-70%)}
+  100%{transform:translateX(70%)}
+}
 .card{
-  margin-top:18px;background:rgba(17,17,17,.85);
+  margin-top:18px;
+  background:rgba(17,17,17,.85);
   border:1px solid rgba(255,255,255,.10);
-  border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;
+  border-radius:var(--radius);
+  padding:16px;
+  position:relative;
+  overflow:hidden;
   box-shadow:var(--shadow);
 }
 .card::before{
-  content:"";position:absolute;inset:-50% -20%;transform:rotate(-12deg);
+  content:"";
+  position:absolute;
+  inset:-50% -20%;
+  transform:rotate(-12deg);
   background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
-  opacity:.28;pointer-events:none;
+  opacity:.28;
+  pointer-events:none;
 }
-.hRow{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;position:relative;z-index:2}
+.hRow{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+  position:relative;
+  z-index:2;
+}
 .hTitle{
   font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
-  font-size:22px;text-transform:uppercase;letter-spacing:.8px;margin:0
+  font-size:22px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  margin:0;
 }
 .pill{
-  font-size:11px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;
-  padding:7px 10px;border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  padding:7px 10px;
+  border-radius:999px;
   border:1px solid rgba(255,255,255,.14);
   background:rgba(255,255,255,.04);
   color:rgba(255,255,255,.86);
-  white-space:nowrap
+  white-space:nowrap;
+  transition:all .25s ease;
 }
 .pill.accent{
   border-color:color-mix(in srgb, var(--accent) 60%, transparent);
-  background:color-mix(in srgb, var(--accent) 18%, transparent)
+  background:color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.pill.is-saving{
+  animation:pulseGlow 1s ease-in-out infinite;
+}
+.pill.is-saved{
+  border-color:rgba(80,255,160,.45);
+  background:rgba(80,255,160,.14);
+  box-shadow:0 0 16px rgba(80,255,160,.18);
+}
+.pill.is-error{
+  border-color:rgba(255,90,90,.45);
+  background:rgba(255,90,90,.14);
+  box-shadow:0 0 16px rgba(255,90,90,.16);
+}
+@keyframes pulseGlow{
+  0%{
+    transform:scale(1);
+    box-shadow:0 0 0 rgba(123,46,255,0);
+  }
+  50%{
+    transform:scale(1.04);
+    box-shadow:0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  100%{
+    transform:scale(1);
+    box-shadow:0 0 0 rgba(123,46,255,0);
+  }
 }
 .meta{
-  margin-top:10px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.45;
-  position:relative;z-index:2
+  margin-top:10px;
+  color:rgba(255,255,255,.72);
+  font-size:13px;
+  line-height:1.45;
+  position:relative;
+  z-index:2;
 }
 .smallLine{
   height:3px;
@@ -94,16 +182,25 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
   z-index:2;
 }
 .form{
-  margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;
-  position:relative;z-index:2
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  position:relative;
+  z-index:2;
 }
-@media (max-width:860px){.form{grid-template-columns:1fr}}
+@media (max-width:860px){
+  .form{grid-template-columns:1fr}
+}
 .field{
   border:1px solid rgba(255,255,255,.10);
   background:rgba(0,0,0,.18);
-  border-radius:14px;padding:12px;
+  border-radius:14px;
+  padding:12px;
 }
-.row2{grid-column:1 / -1}
+.row2{
+  grid-column:1 / -1;
+}
 .label{
   display:inline-block;
   position:relative;
@@ -166,7 +263,8 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
   opacity:1;
 }
 .input, .ta, .sel{
-  width:100%;margin-top:8px;
+  width:100%;
+  margin-top:8px;
   border:1px solid rgba(255,255,255,.12);
   background:rgba(255,255,255,.04);
   color:rgba(255,255,255,.92);
@@ -176,8 +274,13 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
   font-size:14px;
   transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
 }
-.input::placeholder, .ta::placeholder{color:rgba(255,255,255,.42)}
-.ta{min-height:110px;resize:vertical}
+.input::placeholder, .ta::placeholder{
+  color:rgba(255,255,255,.42);
+}
+.ta{
+  min-height:110px;
+  resize:vertical;
+}
 .input:focus, .ta:focus, .sel:focus{
   border-color:color-mix(in srgb, var(--accent) 58%, rgba(255,255,255,.12));
   box-shadow:
@@ -185,17 +288,31 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
     0 0 18px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 .actions{
-  margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:flex-end;
-  position:relative;z-index:2
+  margin-top:12px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:flex-end;
+  position:relative;
+  z-index:2;
 }
 .btn{
-  cursor:pointer;border:none;border-radius:14px;padding:11px 14px;
-  font-weight:900;letter-spacing:.4px;text-transform:uppercase;
-  color:#fff;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  cursor:pointer;
+  border:none;
+  border-radius:14px;
+  padding:11px 14px;
+  font-weight:900;
+  letter-spacing:.4px;
+  text-transform:uppercase;
+  color:#fff;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
   box-shadow:0 12px 26px color-mix(in srgb, var(--accent) 25%, transparent);
   transition:transform .15s ease, filter .15s ease;
 }
-.btn:hover{transform:translateY(-1px);filter:saturate(1.15)}
+.btn:hover{
+  transform:translateY(-1px);
+  filter:saturate(1.15);
+}
 .btn.secondary{
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.14);
@@ -289,9 +406,16 @@ const CLUB_THEMES = {
 
 function clean(v){ return String(v || "").trim(); }
 
-function setPill(text){
+function setPill(text, mode = "normal"){
   const el = document.getElementById("statusPill");
-  if (el) el.textContent = text;
+  if (!el) return;
+
+  el.textContent = text;
+  el.classList.remove("is-saving", "is-saved", "is-error");
+
+  if (mode === "saving") el.classList.add("is-saving");
+  if (mode === "saved") el.classList.add("is-saved");
+  if (mode === "error") el.classList.add("is-error");
 }
 
 function applyTheme({ clubSlug, accent, accent2, glow, source }) {
@@ -363,6 +487,10 @@ function setTeamOptions(teams = [], selectedId = ""){
     sel.appendChild(opt);
   });
 
+  if (teams.length === 1 && !selectedId) {
+    sel.value = String(teams[0].id || "");
+  }
+
   syncFieldValueState(sel);
 }
 
@@ -406,12 +534,13 @@ function clearForm(selectedTeamId = ""){
   const teamSel = document.getElementById("teamId");
   if (teamSel) teamSel.value = selectedTeamId || "";
 
-  setPill("Ready");
   syncAllFieldValueStates();
 }
 
 document.getElementById("btnReset").addEventListener("click", () => {
   clearForm("");
+  setPill("Reset");
+  setTimeout(() => setPill("Ready"), 600);
 });
 
 document.getElementById("btnSave").addEventListener("click", () => {
@@ -419,20 +548,19 @@ document.getElementById("btnSave").addEventListener("click", () => {
   const err = validate(p);
 
   if (err) {
-    setPill("Fix fields");
+    setPill("Fix fields", "error");
     alert(err);
     return;
   }
 
-  setPill("Saving…");
+  setPill("Saving…", "saving");
 
   try {
     window.parent.postMessage({ type:"IDP_SUBMIT", payload: p }, "*");
   } catch(e){
     console.error(e);
-    setPill("Error");
+    setPill("Error", "error");
     alert("Unable to message parent page.");
-    return;
   }
 });
 
@@ -481,18 +609,34 @@ window.addEventListener("message", (ev) => {
   }
 
   if (data.type === "IDP_SAVED") {
-    setPill("Saved ✅");
+    setPill("Saved ✅", "saved");
+
+    setTimeout(() => {
+      clearForm(data.selectedTeamId || "");
+      setPill("Reset");
+    }, 900);
+
+    setTimeout(() => {
+      setPill("Ready");
+    }, 1500);
+
     return;
   }
 
   if (data.type === "IDP_CLEAR_FORM") {
     clearForm(data.selectedTeamId || "");
+    setPill("Reset");
+
+    setTimeout(() => {
+      setPill("Ready");
+    }, 600);
+
     return;
   }
 
   if (data.type === "IDP_SAVE_ERROR") {
     console.warn("Save error:", data.error);
-    setPill("Error");
+    setPill("Error", "error");
     alert("Save failed: " + (data.error || "Unknown error"));
     return;
   }
