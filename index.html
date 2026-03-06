@@ -472,15 +472,16 @@ function setTeamOptions(teams = [], selectedId = ""){
   first.textContent = "Select team…";
   sel.appendChild(first);
 
-  for (const t of teams) {
+  teams.forEach(t => {
     const opt = document.createElement("option");
-    opt.value = String(t.id || t._id || "");
-    opt.textContent = String(t.name || t.title || t.label || "Team");
-    if (selectedId && String(opt.value) === String(selectedId)) {
+    opt.value = String(t.id || "");
+    opt.textContent = String(t.name || "Team");
+    if (selectedId && String(selectedId) === String(t.id || "")) {
       opt.selected = true;
     }
     sel.appendChild(opt);
-  }
+  });
+}
 
   syncFieldValueState(sel);
 }
@@ -632,6 +633,33 @@ window.addEventListener("message", (ev) => {
     return;
   }
 
+f (data.type === "IDP_CLEAR_FORM") {
+  const ids = [
+    "playerName",
+    "idpDate",
+    "playerId",
+    "primaryFocus",
+    "strengths",
+    "improvements",
+    "targets",
+    "notes"
+  ];
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  const teamSel = document.getElementById("teamId");
+  if (teamSel) {
+    teamSel.value = data.selectedTeamId || "";
+  }
+
+  setPill("Ready");
+  syncAllFieldValueStates();
+  return;
+}
+  
   if (data.type === "IDP_SAVED") {
     setPill("Saved ✅");
     return;
