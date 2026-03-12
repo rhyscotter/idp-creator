@@ -287,6 +287,61 @@ body{
     0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
     0 0 18px color-mix(in srgb, var(--accent) 16%, transparent);
 }
+
+.rangeInput{
+  width:100%;
+  margin-top:10px;
+  appearance:none;
+  -webkit-appearance:none;
+  height:6px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  outline:none;
+  cursor:pointer;
+  box-shadow:0 0 12px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.rangeInput::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  appearance:none;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  border:2px solid #fff;
+  background:var(--accent);
+  box-shadow:0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
+  cursor:pointer;
+}
+.rangeInput::-moz-range-thumb{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  border:2px solid #fff;
+  background:var(--accent);
+  box-shadow:0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
+  cursor:pointer;
+}
+.rangeInput::-moz-range-track{
+  height:6px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+}
+.rangeVal{
+  margin-top:8px;
+  color:rgba(255,255,255,.7);
+  font-size:12px;
+  font-weight:700;
+}
+
+.chartWrap{
+  margin-top:12px;
+  height:420px;
+  position:relative;
+}
+.chartCanvas{
+  width:100% !important;
+  height:100% !important;
+}
+
 .actions{
   margin-top:12px;
   display:flex;
@@ -384,6 +439,43 @@ body{
           <div class="label">Coach Notes</div>
           <textarea class="ta" id="notes" placeholder="Any extra notes, mindset focus, reminders, etc."></textarea>
         </div>
+
+        <div class="field">
+          <div class="label">Ball Mastery</div>
+          <input class="rangeInput" id="ballMastery" type="range" min="1" max="10" step="1" value="5" />
+          <div class="rangeVal"><span id="ballMasteryVal">5</span>/10</div>
+        </div>
+
+        <div class="field">
+          <div class="label">Dribbling</div>
+          <input class="rangeInput" id="dribbling" type="range" min="1" max="10" step="1" value="5" />
+          <div class="rangeVal"><span id="dribblingVal">5</span>/10</div>
+        </div>
+
+        <div class="field">
+          <div class="label">Passing</div>
+          <input class="rangeInput" id="passing" type="range" min="1" max="10" step="1" value="5" />
+          <div class="rangeVal"><span id="passingVal">5</span>/10</div>
+        </div>
+
+        <div class="field">
+          <div class="label">Finishing</div>
+          <input class="rangeInput" id="finishing" type="range" min="1" max="10" step="1" value="5" />
+          <div class="rangeVal"><span id="finishingVal">5</span>/10</div>
+        </div>
+
+        <div class="field row2">
+          <div class="label">Defending</div>
+          <input class="rangeInput" id="defending" type="range" min="1" max="10" step="1" value="5" />
+          <div class="rangeVal"><span id="defendingVal">5</span>/10</div>
+        </div>
+
+        <div class="field row2">
+          <div class="label">Development Graph</div>
+          <div class="chartWrap">
+            <canvas id="radarChart" class="chartCanvas"></canvas>
+          </div>
+        </div>
       </div>
 
       <div class="smallLine"></div>
@@ -396,6 +488,7 @@ body{
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const CLUB_THEMES = {
   default:    { accent:"#7B2EFF", accent2:"#B266FF", bgGlow:"rgba(123,46,255,.18)" },
@@ -403,6 +496,8 @@ const CLUB_THEMES = {
   rumson:     { accent:"#FFFFFF", accent2:"#BDBDBD", bgGlow:"rgba(255,255,255,.10)" },
   monmouth:   { accent:"#00E5FF", accent2:"#00A3FF", bgGlow:"rgba(0,229,255,.18)" }
 };
+
+let radarChart = null;
 
 function clean(v){ return String(v || "").trim(); }
 
@@ -432,6 +527,7 @@ function applyTheme({ clubSlug, accent, accent2, glow, source }) {
   r.setProperty("--clubGlow", finalGlow);
 
   console.log("HTML theme applied:", { slug, finalAccent, finalAccent2, finalGlow, source });
+  updateChartTheme();
 }
 
 function syncFieldValueState(el){
@@ -499,6 +595,15 @@ function fillFromContext(ctx){
   if (ctx.playerId) document.getElementById("playerId").value = ctx.playerId;
   if (ctx.playerName) document.getElementById("playerName").value = ctx.playerName;
   if (ctx.teamId) document.getElementById("teamId").value = ctx.teamId;
+
+  if (ctx.ballMastery != null) document.getElementById("ballMastery").value = Number(ctx.ballMastery);
+  if (ctx.dribbling != null) document.getElementById("dribbling").value = Number(ctx.dribbling);
+  if (ctx.passing != null) document.getElementById("passing").value = Number(ctx.passing);
+  if (ctx.finishing != null) document.getElementById("finishing").value = Number(ctx.finishing);
+  if (ctx.defending != null) document.getElementById("defending").value = Number(ctx.defending);
+
+  updateRatingDisplays();
+  updateChart();
   syncAllFieldValueStates();
 }
 
@@ -512,7 +617,12 @@ function payload(){
     strengths: clean(document.getElementById("strengths").value),
     improvements: clean(document.getElementById("improvements").value),
     targets: clean(document.getElementById("targets").value),
-    notes: clean(document.getElementById("notes").value)
+    notes: clean(document.getElementById("notes").value),
+    ballMastery: Number(document.getElementById("ballMastery").value || 0),
+    dribbling: Number(document.getElementById("dribbling").value || 0),
+    passing: Number(document.getElementById("passing").value || 0),
+    finishing: Number(document.getElementById("finishing").value || 0),
+    defending: Number(document.getElementById("defending").value || 0)
   };
 }
 
@@ -534,7 +644,152 @@ function clearForm(selectedTeamId = ""){
   const teamSel = document.getElementById("teamId");
   if (teamSel) teamSel.value = selectedTeamId || "";
 
+  document.getElementById("ballMastery").value = 5;
+  document.getElementById("dribbling").value = 5;
+  document.getElementById("passing").value = 5;
+  document.getElementById("finishing").value = 5;
+  document.getElementById("defending").value = 5;
+
+  updateRatingDisplays();
+  updateChart();
   syncAllFieldValueStates();
+}
+
+function updateRatingDisplays(){
+  document.getElementById("ballMasteryVal").textContent = document.getElementById("ballMastery").value;
+  document.getElementById("dribblingVal").textContent = document.getElementById("dribbling").value;
+  document.getElementById("passingVal").textContent = document.getElementById("passing").value;
+  document.getElementById("finishingVal").textContent = document.getElementById("finishing").value;
+  document.getElementById("defendingVal").textContent = document.getElementById("defending").value;
+}
+
+function getChartValues(){
+  return [
+    Number(document.getElementById("ballMastery").value || 0),
+    Number(document.getElementById("dribbling").value || 0),
+    Number(document.getElementById("passing").value || 0),
+    Number(document.getElementById("finishing").value || 0),
+    Number(document.getElementById("defending").value || 0)
+  ];
+}
+
+function buildChart(){
+  const ctx = document.getElementById("radarChart");
+  if (!ctx) return;
+
+  radarChart = new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels: ["Ball Mastery","Dribbling","Passing","Finishing","Defending"],
+      datasets: [{
+        label: "Player Score",
+        data: getChartValues(),
+        fill: true,
+        backgroundColor: "rgba(123,46,255,.20)",
+        borderColor: "#7B2EFF",
+        borderWidth: 3,
+        pointBackgroundColor: ["#8B5CF6","#22D3EE","#60A5FA","#F59E0B","#34D399"],
+        pointBorderColor: "#fff",
+        pointHoverBackgroundColor: "#fff",
+        pointHoverBorderColor: "#7B2EFF",
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 700,
+        easing: "easeOutQuart"
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "rgba(10,10,10,.92)",
+          titleColor: "#fff",
+          bodyColor: "rgba(255,255,255,.88)",
+          borderColor: "rgba(255,255,255,.12)",
+          borderWidth: 1,
+          padding: 12,
+          displayColors: false,
+          callbacks: {
+            label: (ctx) => `${ctx.label}: ${ctx.raw}/10`
+          }
+        }
+      },
+      scales: {
+        r: {
+          min: 0,
+          max: 10,
+          ticks: {
+            stepSize: 2,
+            color: "rgba(255,255,255,.55)",
+            backdropColor: "transparent",
+            font: { size: 11, weight: "700" }
+          },
+          grid: {
+            color: "rgba(255,255,255,.10)"
+          },
+          angleLines: {
+            color: "rgba(255,255,255,.10)"
+          },
+          pointLabels: {
+            color: "rgba(255,255,255,.9)",
+            font: {
+              size: 13,
+              weight: "700"
+            }
+          }
+        }
+      }
+    }
+  });
+
+  updateChartTheme();
+}
+
+function updateChartTheme(){
+  if (!radarChart) return;
+  const styles = getComputedStyle(document.documentElement);
+  const accent = styles.getPropertyValue("--accent").trim() || "#7B2EFF";
+
+  radarChart.data.datasets[0].borderColor = accent;
+
+  if (accent.startsWith("#")) {
+    const hex = accent.replace("#", "");
+    if (hex.length === 6) {
+      const r = parseInt(hex.slice(0,2),16);
+      const g = parseInt(hex.slice(2,4),16);
+      const b = parseInt(hex.slice(4,6),16);
+      radarChart.data.datasets[0].backgroundColor = `rgba(${r},${g},${b},0.20)`;
+      radarChart.data.datasets[0].pointHoverBorderColor = accent;
+    }
+  }
+
+  radarChart.update();
+}
+
+function updateChart(){
+  if (!radarChart) return;
+  radarChart.data.datasets[0].data = getChartValues();
+  radarChart.update();
+}
+
+function bindGraphControls(){
+  ["ballMastery","dribbling","passing","finishing","defending"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const sync = () => {
+      updateRatingDisplays();
+      updateChart();
+    };
+
+    el.addEventListener("input", sync);
+    el.addEventListener("change", sync);
+  });
 }
 
 document.getElementById("btnReset").addEventListener("click", () => {
@@ -643,6 +898,9 @@ window.addEventListener("message", (ev) => {
 });
 
 bindFieldTitleAnimations();
+buildChart();
+bindGraphControls();
+updateRatingDisplays();
 syncAllFieldValueStates();
 
 try {
