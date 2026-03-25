@@ -350,6 +350,7 @@ body{
   justify-content:flex-end;
   position:relative;
   z-index:2;
+  flex-wrap:wrap;
 }
 .btn{
   cursor:pointer;
@@ -482,6 +483,7 @@ body{
 
       <div class="actions">
         <button class="btn secondary" id="btnReset" type="button">Reset</button>
+        <button class="btn secondary" id="btnShare" type="button">Share</button>
         <button class="btn" id="btnSave" type="button">Save IDP</button>
       </div>
     </div>
@@ -607,7 +609,9 @@ function fillFromContext(ctx){
   syncAllFieldValueStates();
 }
 
-function payload(){
+function payload(opts = {}){
+  const shareRequested = !!opts.shareRequested;
+
   return {
     playerName: clean(document.getElementById("playerName").value),
     idpDate: clean(document.getElementById("idpDate").value),
@@ -622,7 +626,9 @@ function payload(){
     dribbling: Number(document.getElementById("dribbling").value || 0),
     passing: Number(document.getElementById("passing").value || 0),
     finishing: Number(document.getElementById("finishing").value || 0),
-    defending: Number(document.getElementById("defending").value || 0)
+    defending: Number(document.getElementById("defending").value || 0),
+    sharedWithPlayer: shareRequested,
+    shareRequested
   };
 }
 
@@ -792,14 +798,8 @@ function bindGraphControls(){
   });
 }
 
-document.getElementById("btnReset").addEventListener("click", () => {
-  clearForm("");
-  setPill("Reset");
-  setTimeout(() => setPill("Ready"), 600);
-});
-
-document.getElementById("btnSave").addEventListener("click", () => {
-  const p = payload();
+function submitIdp({ shareRequested = false } = {}){
+  const p = payload({ shareRequested });
   const err = validate(p);
 
   if (err) {
@@ -808,7 +808,7 @@ document.getElementById("btnSave").addEventListener("click", () => {
     return;
   }
 
-  setPill("Saving…", "saving");
+  setPill(shareRequested ? "Sharing…" : "Saving…", "saving");
 
   try {
     window.parent.postMessage({ type:"IDP_SUBMIT", payload: p }, "*");
@@ -817,6 +817,20 @@ document.getElementById("btnSave").addEventListener("click", () => {
     setPill("Error", "error");
     alert("Unable to message parent page.");
   }
+}
+
+document.getElementById("btnReset").addEventListener("click", () => {
+  clearForm("");
+  setPill("Reset");
+  setTimeout(() => setPill("Ready"), 600);
+});
+
+document.getElementById("btnSave").addEventListener("click", () => {
+  submitIdp({ shareRequested: false });
+});
+
+document.getElementById("btnShare").addEventListener("click", () => {
+  submitIdp({ shareRequested: true });
 });
 
 (function bootFromHash(){
@@ -878,6 +892,21 @@ window.addEventListener("message", (ev) => {
     return;
   }
 
+  if (data.type === "IDP_SHARED") {
+    setPill("Shared ✅", "saved");
+
+    setTimeout(() => {
+      clearForm(data.selectedTeamId || "");
+      setPill("Reset");
+    }, 900);
+
+    setTimeout(() => {
+      setPill("Ready");
+    }, 1500);
+
+    return;
+  }
+
   if (data.type === "IDP_CLEAR_FORM") {
     clearForm(data.selectedTeamId || "");
     setPill("Reset");
@@ -893,6 +922,13 @@ window.addEventListener("message", (ev) => {
     console.warn("Save error:", data.error);
     setPill("Error", "error");
     alert("Save failed: " + (data.error || "Unknown error"));
+    return;
+  }
+
+  if (data.type === "IDP_SHARE_ERROR") {
+    console.warn("Share error:", data.error);
+    setPill("Error", "error");
+    alert("Share failed: " + (data.error || "Unknown error"));
     return;
   }
 });
