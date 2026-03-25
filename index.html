@@ -678,10 +678,15 @@ function fillFromContext(ctx){
 function payload(opts = {}){
   const shareRequested = !!opts.shareRequested;
 
+  const playerName = clean(document.getElementById("playerName").value);
+  const playerId = clean(document.getElementById("playerId").value);
+
+  console.log("IDP payload debug:", { playerName, playerId });
+
   return {
-    playerName: clean(document.getElementById("playerName").value),
+    playerName: playerName,
     idpDate: clean(document.getElementById("idpDate").value),
-    playerId: clean(document.getElementById("playerId").value),
+    playerId: playerId,
     teamId: clean(document.getElementById("teamId").value),
     primaryFocus: clean(document.getElementById("primaryFocus").value),
     strengths: clean(document.getElementById("strengths").value),
