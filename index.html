@@ -943,22 +943,20 @@ window.addEventListener("message", (ev) => {
   }
 
   if (data.type === "IDP_SAVED") {
-    setPill("Saved ✅", "saved");
+    setPill("Saved Successfully ✅", "saved");
     setTimeout(() => {
       clearForm(data.selectedTeamId || "");
-      setPill("Reset");
-    }, 900);
-    setTimeout(() => { setPill("Ready"); }, 1500);
+      setPill("Ready");
+    }, 1200);
     return;
   }
 
   if (data.type === "IDP_SHARED") {
-    setPill("Shared ✅", "saved");
+    setPill("Share Successful ✅", "saved");
     setTimeout(() => {
       clearForm(data.selectedTeamId || "");
-      setPill("Reset");
-    }, 900);
-    setTimeout(() => { setPill("Ready"); }, 1500);
+      setPill("Ready");
+    }, 1200);
     return;
   }
 
@@ -970,13 +968,13 @@ window.addEventListener("message", (ev) => {
   }
 
   if (data.type === "IDP_SAVE_ERROR") {
-    setPill("Error", "error");
+    setPill("Save Failed ❌", "error");
     alert("Save failed: " + (data.error || "Unknown error"));
     return;
   }
 
   if (data.type === "IDP_SHARE_ERROR") {
-    setPill("Error", "error");
+    setPill("Share Failed ❌", "error");
     alert("Share failed: " + (data.error || "Unknown error"));
     return;
   }
