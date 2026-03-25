@@ -148,18 +148,9 @@ body{
   box-shadow:0 0 16px rgba(255,90,90,.16);
 }
 @keyframes pulseGlow{
-  0%{
-    transform:scale(1);
-    box-shadow:0 0 0 rgba(123,46,255,0);
-  }
-  50%{
-    transform:scale(1.04);
-    box-shadow:0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
-  }
-  100%{
-    transform:scale(1);
-    box-shadow:0 0 0 rgba(123,46,255,0);
-  }
+  0%{transform:scale(1);box-shadow:0 0 0 rgba(123,46,255,0)}
+  50%{transform:scale(1.04);box-shadow:0 0 18px color-mix(in srgb, var(--accent) 35%, transparent)}
+  100%{transform:scale(1);box-shadow:0 0 0 rgba(123,46,255,0)}
 }
 .meta{
   margin-top:10px;
@@ -274,6 +265,9 @@ body{
   font-size:14px;
   transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
 }
+.input[readonly]{
+  opacity:.86;
+}
 .input::placeholder, .ta::placeholder{
   color:rgba(255,255,255,.42);
 }
@@ -287,7 +281,6 @@ body{
     0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent),
     0 0 18px color-mix(in srgb, var(--accent) 16%, transparent);
 }
-
 .rangeInput{
   width:100%;
   margin-top:10px;
@@ -331,7 +324,6 @@ body{
   font-size:12px;
   font-weight:700;
 }
-
 .chartWrap{
   margin-top:12px;
   height:420px;
@@ -341,7 +333,6 @@ body{
   width:100% !important;
   height:100% !important;
 }
-
 .actions{
   margin-top:12px;
   display:flex;
@@ -394,9 +385,16 @@ body{
       </div>
 
       <div class="form">
+        <div class="field row2">
+          <div class="label">Select Player</div>
+          <select class="sel" id="playerSelect">
+            <option value="">Loading players…</option>
+          </select>
+        </div>
+
         <div class="field">
           <div class="label">Player Name</div>
-          <input class="input" id="playerName" placeholder="e.g., Lucy C." />
+          <input class="input" id="playerName" placeholder="Auto-filled from selected player" readonly />
         </div>
 
         <div class="field">
@@ -406,7 +404,7 @@ body{
 
         <div class="field">
           <div class="label">Player ID</div>
-          <input class="input" id="playerId" placeholder="auto-filled from Wix if available" />
+          <input class="input" id="playerId" placeholder="Auto-filled from selected player" readonly />
         </div>
 
         <div class="field">
@@ -500,16 +498,15 @@ const CLUB_THEMES = {
 };
 
 let radarChart = null;
+let playersCache = [];
 
 function clean(v){ return String(v || "").trim(); }
 
 function setPill(text, mode = "normal"){
   const el = document.getElementById("statusPill");
   if (!el) return;
-
   el.textContent = text;
   el.classList.remove("is-saving", "is-saved", "is-error");
-
   if (mode === "saving") el.classList.add("is-saving");
   if (mode === "saved") el.classList.add("is-saved");
   if (mode === "error") el.classList.add("is-error");
@@ -528,7 +525,6 @@ function applyTheme({ clubSlug, accent, accent2, glow, source }) {
   r.setProperty("--accent2", finalAccent2);
   r.setProperty("--clubGlow", finalGlow);
 
-  console.log("HTML theme applied:", { slug, finalAccent, finalAccent2, finalGlow, source });
   updateChartTheme();
 }
 
@@ -556,8 +552,6 @@ function bindFieldTitleAnimations(){
 function setTeamOptions(teams = [], selectedId = ""){
   const sel = document.getElementById("teamId");
   if (!sel) return;
-
-  console.log("HTML setTeamOptions received:", { teams, selectedId });
 
   sel.innerHTML = "";
 
@@ -592,11 +586,83 @@ function setTeamOptions(teams = [], selectedId = ""){
   syncFieldValueState(sel);
 }
 
+function setPlayerOptions(players = [], selectedPlayerId = ""){
+  const sel = document.getElementById("playerSelect");
+  if (!sel) return;
+
+  playersCache = Array.isArray(players) ? players : [];
+  sel.innerHTML = "";
+
+  const first = document.createElement("option");
+  first.value = "";
+  first.textContent = playersCache.length ? "Select player…" : "No players found";
+  sel.appendChild(first);
+
+  playersCache.forEach((p) => {
+    const opt = document.createElement("option");
+    opt.value = String(p.playerId || "");
+    opt.textContent = String(p.name || "Player");
+    if (selectedPlayerId && String(selectedPlayerId) === String(p.playerId || "")) {
+      opt.selected = true;
+    }
+    sel.appendChild(opt);
+  });
+
+  syncFieldValueState(sel);
+
+  if (selectedPlayerId) {
+    applySelectedPlayerById(selectedPlayerId, false);
+  } else if (playersCache.length === 1) {
+    applySelectedPlayerById(String(playersCache[0].playerId || ""), true);
+  }
+}
+
+function applySelectedPlayerById(playerId, notifyParent = true){
+  const found = playersCache.find((p) => String(p.playerId || "") === String(playerId || ""));
+  const playerNameEl = document.getElementById("playerName");
+  const playerIdEl = document.getElementById("playerId");
+  const playerSelectEl = document.getElementById("playerSelect");
+  const teamSel = document.getElementById("teamId");
+
+  if (!found) {
+    if (playerNameEl) playerNameEl.value = "";
+    if (playerIdEl) playerIdEl.value = "";
+    if (playerSelectEl) playerSelectEl.value = "";
+    syncAllFieldValueStates();
+    return;
+  }
+
+  if (playerSelectEl) playerSelectEl.value = String(found.playerId || "");
+  if (playerNameEl) playerNameEl.value = String(found.name || "");
+  if (playerIdEl) playerIdEl.value = String(found.playerId || "");
+
+  if (teamSel && found.teamId) {
+    const hasOption = [...teamSel.options].some(o => String(o.value) === String(found.teamId));
+    if (hasOption) teamSel.value = String(found.teamId);
+  }
+
+  syncAllFieldValueStates();
+
+  if (notifyParent) {
+    try {
+      window.parent.postMessage({
+        type: "IDP_PLAYER_SELECTED",
+        payload: {
+          playerId: String(found.playerId || ""),
+          playerName: String(found.name || ""),
+          teamId: String(found.teamId || "")
+        }
+      }, "*");
+    } catch(_) {}
+  }
+}
+
 function fillFromContext(ctx){
   if (!ctx) return;
   if (ctx.playerId) document.getElementById("playerId").value = ctx.playerId;
   if (ctx.playerName) document.getElementById("playerName").value = ctx.playerName;
   if (ctx.teamId) document.getElementById("teamId").value = ctx.teamId;
+  if (ctx.playerId) document.getElementById("playerSelect").value = ctx.playerId;
 
   if (ctx.ballMastery != null) document.getElementById("ballMastery").value = Number(ctx.ballMastery);
   if (ctx.dribbling != null) document.getElementById("dribbling").value = Number(ctx.dribbling);
@@ -633,8 +699,8 @@ function payload(opts = {}){
 }
 
 function validate(p){
-  if (!p.playerName) return "Player Name is required.";
-  if (!p.playerId) return "Player ID is required.";
+  if (!p.playerName) return "Player is required.";
+  if (!p.playerId) return "Please select a player.";
   if (!p.idpDate) return "IDP Date is required.";
   if (!p.primaryFocus) return "Primary Focus is required.";
   if (!p.targets) return "Weekly Targets are required.";
@@ -646,6 +712,9 @@ function clearForm(selectedTeamId = ""){
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
+
+  const playerSelect = document.getElementById("playerSelect");
+  if (playerSelect) playerSelect.value = "";
 
   const teamSel = document.getElementById("teamId");
   if (teamSel) teamSel.value = selectedTeamId || "";
@@ -706,10 +775,7 @@ function buildChart(){
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: {
-        duration: 700,
-        easing: "easeOutQuart"
-      },
+      animation: { duration: 700, easing: "easeOutQuart" },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -720,9 +786,7 @@ function buildChart(){
           borderWidth: 1,
           padding: 12,
           displayColors: false,
-          callbacks: {
-            label: (ctx) => `${ctx.label}: ${ctx.raw}/10`
-          }
+          callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}/10` }
         }
       },
       scales: {
@@ -735,18 +799,11 @@ function buildChart(){
             backdropColor: "transparent",
             font: { size: 11, weight: "700" }
           },
-          grid: {
-            color: "rgba(255,255,255,.10)"
-          },
-          angleLines: {
-            color: "rgba(255,255,255,.10)"
-          },
+          grid: { color: "rgba(255,255,255,.10)" },
+          angleLines: { color: "rgba(255,255,255,.10)" },
           pointLabels: {
             color: "rgba(255,255,255,.9)",
-            font: {
-              size: 13,
-              weight: "700"
-            }
+            font: { size: 13, weight: "700" }
           }
         }
       }
@@ -760,7 +817,6 @@ function updateChartTheme(){
   if (!radarChart) return;
   const styles = getComputedStyle(document.documentElement);
   const accent = styles.getPropertyValue("--accent").trim() || "#7B2EFF";
-
   radarChart.data.datasets[0].borderColor = accent;
 
   if (accent.startsWith("#")) {
@@ -773,7 +829,6 @@ function updateChartTheme(){
       radarChart.data.datasets[0].pointHoverBorderColor = accent;
     }
   }
-
   radarChart.update();
 }
 
@@ -787,12 +842,10 @@ function bindGraphControls(){
   ["ballMastery","dribbling","passing","finishing","defending"].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-
     const sync = () => {
       updateRatingDisplays();
       updateChart();
     };
-
     el.addEventListener("input", sync);
     el.addEventListener("change", sync);
   });
@@ -833,6 +886,10 @@ document.getElementById("btnShare").addEventListener("click", () => {
   submitIdp({ shareRequested: true });
 });
 
+document.getElementById("playerSelect").addEventListener("change", (e) => {
+  applySelectedPlayerById(clean(e.target.value), true);
+});
+
 (function bootFromHash(){
   const raw = (location.hash || "").replace(/^#/, "");
   const params = new URLSearchParams(raw);
@@ -852,8 +909,6 @@ document.getElementById("btnShare").addEventListener("click", () => {
 window.addEventListener("message", (ev) => {
   const data = ev.data;
   if (!data || !data.type) return;
-
-  console.log("HTML received message:", data);
 
   if (data.type === "IDP_CREATOR_INIT") {
     applyTheme({
@@ -877,56 +932,45 @@ window.addEventListener("message", (ev) => {
     return;
   }
 
+  if (data.type === "IDP_PLAYERS") {
+    setPlayerOptions(data.players || [], data.selectedPlayerId || "");
+    return;
+  }
+
   if (data.type === "IDP_SAVED") {
     setPill("Saved ✅", "saved");
-
     setTimeout(() => {
       clearForm(data.selectedTeamId || "");
       setPill("Reset");
     }, 900);
-
-    setTimeout(() => {
-      setPill("Ready");
-    }, 1500);
-
+    setTimeout(() => { setPill("Ready"); }, 1500);
     return;
   }
 
   if (data.type === "IDP_SHARED") {
     setPill("Shared ✅", "saved");
-
     setTimeout(() => {
       clearForm(data.selectedTeamId || "");
       setPill("Reset");
     }, 900);
-
-    setTimeout(() => {
-      setPill("Ready");
-    }, 1500);
-
+    setTimeout(() => { setPill("Ready"); }, 1500);
     return;
   }
 
   if (data.type === "IDP_CLEAR_FORM") {
     clearForm(data.selectedTeamId || "");
     setPill("Reset");
-
-    setTimeout(() => {
-      setPill("Ready");
-    }, 600);
-
+    setTimeout(() => { setPill("Ready"); }, 600);
     return;
   }
 
   if (data.type === "IDP_SAVE_ERROR") {
-    console.warn("Save error:", data.error);
     setPill("Error", "error");
     alert("Save failed: " + (data.error || "Unknown error"));
     return;
   }
 
   if (data.type === "IDP_SHARE_ERROR") {
-    console.warn("Share error:", data.error);
     setPill("Error", "error");
     alert("Share failed: " + (data.error || "Unknown error"));
     return;
